@@ -1,8 +1,8 @@
 ﻿using BotFights.Core;
-using BotFights.Core.API;
-using BotFights.Core.Configuration;
+using BotFights.Wordle;
 using BotFights.Wordle.API;
 using BotFights.Wordle.Services;
+using BotFights.Wordle.Services.WordList;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,22 +11,43 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddBotFights(typeof(Program));
 builder.Services.AddBotFightsClient<IWordleBotFightsAPI>();
 builder.Services.AddTransient<IWordleFightService, WordleFightService>();
+builder.Services.AddSingleton<IWordListProvider, FileWordListProvider>();
+builder.Services.AddTransient<IWordleBot, SampleWordleBot>();
+
 var app = builder.Build();
+
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
-var config = app.Services.GetRequiredService<IBotFightsConfiguration>();
-var botFightsAPI = app.Services.GetRequiredService<IBotFightsAPI>();
-var user = await botFightsAPI.GetUser(config.UserId);
-logger.LogInformation("User: {@User}", user);
+// var config = app.Services.GetRequiredService<IBotFightsConfiguration>();
+// var botFightsAPI = app.Services.GetRequiredService<IBotFightsAPI>();
+// var user = await botFightsAPI.GetUser(config.UserId);
+// logger.LogInformation("User: {@User}", user);
 
 var service = app.Services.GetRequiredService<IWordleFightService>();
+var bot = app.Services.GetRequiredService<IWordleBot>();
 
 var fight = await service.CreateFight("test");
 logger.LogInformation("Created Fight: {@Fight}", fight);
+await Task.Delay(1000);
 
-fight = await service.TryGuesses(fight, new List<Guess>
+while (fight.Games.Any(x => !x.Solved))
 {
-    new() { GameNumber = 0, GuessString = "irate" }
-});
+    var guesses = new List<Guess>();
+    foreach (var unSolvedGame in fight.Games.Where(x => !x.Solved))
+    {
+        var guessStr = await bot.GetNextGuess(unSolvedGame);
+        if (guessStr == null)
+        {
+            continue;
+        }
+        guesses.Add(new Guess
+        {
+            GameNumber = unSolvedGame.Number,
+            GuessString = guessStr?.ToLower()
+        });
+    }
+    fight = await service.TryGuesses(fight, guesses);
+    await Task.Delay(1000);
+}
 
 logger.LogInformation("Updated Fight: {@Fight}", fight);
