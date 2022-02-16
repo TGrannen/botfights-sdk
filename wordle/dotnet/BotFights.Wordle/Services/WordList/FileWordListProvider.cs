@@ -22,7 +22,7 @@ public class FileWordListProvider : IWordListProvider
 
         while ((line = sr.ReadLine()) != null)
         {
-            lines.Add(line.ToUpperInvariant());
+            lines.Add(line.ToLowerInvariant());
         }
 
         _lines = lines.ToList();

@@ -27,7 +27,7 @@ var service = app.Services.GetRequiredService<IWordleFightService>();
 var bot = app.Services.GetRequiredService<IWordleBot>();
 
 var fight = await service.CreateFight("test");
-logger.LogInformation("Created Fight: {@Fight}", fight);
+logger.LogInformation("Created Fight: {FightId}", fight.Id);
 await Task.Delay(1000);
 
 while (fight.Games.Any(x => !x.Solved))
@@ -40,14 +40,24 @@ while (fight.Games.Any(x => !x.Solved))
         {
             continue;
         }
+
         guesses.Add(new Guess
         {
             GameNumber = unSolvedGame.Number,
             GuessString = guessStr?.ToLower()
         });
     }
+
     fight = await service.TryGuesses(fight, guesses);
     await Task.Delay(1000);
 }
 
-logger.LogInformation("Updated Fight: {@Fight}", fight);
+foreach (var x in fight.Games)
+{
+    logger.LogInformation("Game Result: {@Fight}", new
+    {
+        Number = x.Number,
+        Solution = x.Tries.LastOrDefault()?.TryString,
+        NumberOfTries = x.Tries.Count
+    });
+}
