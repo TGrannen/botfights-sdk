@@ -1,4 +1,6 @@
-﻿namespace BotFights.Wordle.Services;
+﻿using BotFights.Wordle.Models;
+
+namespace BotFights.Wordle.Services;
 
 public interface IWordleFightService
 {

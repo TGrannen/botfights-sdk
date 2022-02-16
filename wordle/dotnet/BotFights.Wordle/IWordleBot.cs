@@ -1,8 +1,8 @@
-﻿using BotFights.Wordle.Services;
+﻿using BotFights.Wordle.Models;
 
 namespace BotFights.Wordle;
 
 public interface IWordleBot
 {
-    Task<string> GetNextGuess(Game game);
+    Task<string> GetNextGuess(List<Try> tries);
 }

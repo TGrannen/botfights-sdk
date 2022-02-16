@@ -1,5 +1,6 @@
 using BotFights.Wordle.API;
 using BotFights.Wordle.API.Models;
+using BotFights.Wordle.Models;
 
 namespace BotFights.Wordle.Services;
 

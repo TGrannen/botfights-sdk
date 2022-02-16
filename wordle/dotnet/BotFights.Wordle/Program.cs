@@ -1,6 +1,7 @@
 ﻿using BotFights.Core;
 using BotFights.Wordle;
 using BotFights.Wordle.API;
+using BotFights.Wordle.Models;
 using BotFights.Wordle.Services;
 using BotFights.Wordle.Services.WordList;
 using Microsoft.AspNetCore.Builder;
@@ -35,7 +36,7 @@ while (fight.Games.Any(x => !x.Solved))
     var guesses = new List<Guess>();
     foreach (var unSolvedGame in fight.Games.Where(x => !x.Solved))
     {
-        var guessStr = await bot.GetNextGuess(unSolvedGame);
+        var guessStr = await bot.GetNextGuess(unSolvedGame.Tries);
         if (guessStr == null)
         {
             continue;

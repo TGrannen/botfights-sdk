@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using BotFights.Wordle.Services;
+using BotFights.Wordle.Models;
 
 namespace BotFights.Wordle.API.Models;
 

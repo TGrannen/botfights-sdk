@@ -1,10 +1,10 @@
-using BotFights.Wordle.Services;
+using BotFights.Wordle.Models;
 
 namespace BotFights.Wordle;
 
 class SampleWordleBot : IWordleBot
 {
-    public Task<string> GetNextGuess(Game game)
+    public Task<string> GetNextGuess(List<Try> tries)
     {
         throw new NotImplementedException();
     }
