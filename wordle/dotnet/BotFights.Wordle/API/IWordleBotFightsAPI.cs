@@ -5,5 +5,8 @@ namespace BotFights.Wordle.API;
 public interface IWordleBotFightsAPI
 {
     [Put("/game/wordle")]
-    Task<WordleGameResponse> GetResponse();
+    Task<WordleFight> CreateFight();
+
+    [Patch("/game/wordle/{fightId}")]
+    Task<WordleFight> UpdateGuesses(string fightId, [Body] GuessesPayload payload);
 }

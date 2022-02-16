@@ -1,4 +1,5 @@
-﻿using BotFights.Core.API;
+﻿using System.Text.Json;
+using BotFights.Core.API;
 using BotFights.Core.API.HttpMessageHandlers;
 using BotFights.Core.Configuration;
 using Microsoft.AspNetCore.Builder;
