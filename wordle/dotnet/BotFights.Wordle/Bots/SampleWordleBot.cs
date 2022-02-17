@@ -23,15 +23,17 @@ class SampleWordleBot : IWordleBot
         return words.FirstOrDefault(x => !triedWords.ContainsKey(x));
     }
 
-    private IEnumerable<string> GetRemainingWords(IEnumerable<string> allWords, List<Position> correctPositions)
+    private static IEnumerable<string> GetRemainingWords(IEnumerable<string> allWords, List<Position> correctPositions)
     {
         var enumerable = allWords;
-        if (correctPositions.Any())
+        if (!correctPositions.Any())
         {
-            foreach (var position in correctPositions)
-            {
-                enumerable = enumerable.Where(x => x[position.Index] == position.Char);
-            }
+            return enumerable.OrderBy(x => x).ToList();
+        }
+
+        foreach (var position in correctPositions)
+        {
+            enumerable = enumerable.Where(x => x[position.Index] == position.Char);
         }
 
         return enumerable.OrderBy(x => x).ToList();

@@ -1,6 +1,6 @@
 ﻿using BotFights.Wordle.Models;
 
-namespace BotFights.Wordle;
+namespace BotFights.Wordle.Bots;
 
 public interface IWordleBot
 {

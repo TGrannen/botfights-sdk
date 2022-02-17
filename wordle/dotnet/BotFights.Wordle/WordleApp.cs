@@ -20,6 +20,7 @@ public class WordleApp
         var app = BuildApp(configureServices);
         AddBotFightsCommand(app);
         AddUserCommand(app);
+        AddBotTestCommand(app);
         app.Run();
     }
 
@@ -31,10 +32,11 @@ public class WordleApp
         builder.Services.AddBotFightsClient<IWordleBotFightsAPI>();
         builder.Services.AddTransient<IWordleFightService, WordleFightService>();
         builder.Services.AddSingleton<IWordListProvider, FileWordListProvider>();
-        builder.Services.AddTransient<IWordleBot, SampleWordleBot>();
         builder.Host.UseSerilog((context, configuration) => { configuration.ReadFrom.Configuration(context.Configuration); });
 
         configureServices?.Invoke(builder.Services);
+
+        builder.Services.Scan(scan => scan.FromCallingAssembly().AddClasses(c => c.AssignableTo<IWordleBot>()).As<IWordleBot>());
 
         var app = builder.Build();
         return app;
@@ -60,7 +62,6 @@ public class WordleApp
                 [FromService] IWordListProvider wordListProvider,
                 [FromService] ILogger<Program> logger) =>
             {
-                var words = await wordListProvider.GetWordList();
                 var fight = await service.CreateFight("test");
                 logger.LogInformation("Created Fight: {FightId}", fight.Id);
                 await Task.Delay(1000);
@@ -97,6 +98,20 @@ public class WordleApp
                         NumberOfTries = x.Tries.Count
                     });
                 }
+
+                return 0;
+            });
+    }
+
+    private static void AddBotTestCommand(CoconaApp app)
+    {
+        app.AddCommand("test",
+            ([FromService] IEnumerable<IWordleBot> bots,
+                [FromService] IWordleFightService service,
+                [FromService] IWordListProvider wordListProvider,
+                [FromService] ILogger<Program> logger) =>
+            {
+                logger.LogInformation("Bots: {@Bots}", bots);
 
                 return 0;
             });

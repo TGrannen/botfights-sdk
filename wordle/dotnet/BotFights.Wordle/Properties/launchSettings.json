@@ -1,0 +1,17 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "BotFights.Wordle-user": {
+      "commandName": "Project",
+      "commandLineArgs": "user -u <TODO>"
+    },
+    "BotFights.Wordle-test": {
+      "commandName": "Project",
+      "commandLineArgs": "test"
+    },
+    "BotFights.Wordle-fight": {
+      "commandName": "Project",
+      "commandLineArgs": "botfights"
+    }
+  }
+}
