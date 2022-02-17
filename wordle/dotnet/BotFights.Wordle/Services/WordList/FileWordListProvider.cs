@@ -4,7 +4,7 @@ namespace BotFights.Wordle.Services.WordList;
 
 public class FileWordListProvider : IWordListProvider
 {
-    private const string Path = @"..\..\..\..\..\python\wordlist.txt";
+    private const string Path = @".\Wordlist\wordlist.txt";
     private List<string> _lines = null;
 
     public Task<List<string>> GetWordList()
