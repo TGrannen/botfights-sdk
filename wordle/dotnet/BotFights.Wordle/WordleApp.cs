@@ -151,6 +151,16 @@ public class WordleApp
                         logger.LogWarning("Bot: {Bot} Game Result: {@Game}", valuePair.Key, logGame);
                     }
                 }
+
+                logger.LogInformation("Game Stats: {@Stats}", new
+                {
+                    Tries = new
+                    {
+                        Min = valuePair.Value.Min(x => x.Tries.Count),
+                        Average = valuePair.Value.Average(x => x.Tries.Count),
+                        Mix = valuePair.Value.Max(x => x.Tries.Count),
+                    }
+                });
             }
 
             return 0;
