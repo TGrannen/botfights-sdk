@@ -1,64 +1,78 @@
 ﻿using BotFights.Core;
+using BotFights.Core.API;
 using BotFights.Wordle;
 using BotFights.Wordle.API;
 using BotFights.Wordle.Models;
 using BotFights.Wordle.Services;
 using BotFights.Wordle.Services.WordList;
-using Microsoft.AspNetCore.Builder;
+using Cocona;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
-builder.AddBotFights(typeof(Program));
+var builder = CoconaApp.CreateBuilder();
+builder.Services.AddBotFights(builder.Configuration);
+builder.Configuration.AddUserSecrets(typeof(Program).Assembly);
 builder.Services.AddBotFightsClient<IWordleBotFightsAPI>();
 builder.Services.AddTransient<IWordleFightService, WordleFightService>();
 builder.Services.AddSingleton<IWordListProvider, FileWordListProvider>();
 builder.Services.AddTransient<IWordleBot, SampleWordleBot>();
+builder.Host.UseSerilog((context, configuration) => { configuration.ReadFrom.Configuration(context.Configuration); });
 
 var app = builder.Build();
 
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-
-// var config = app.Services.GetRequiredService<IBotFightsConfiguration>();
-// var botFightsAPI = app.Services.GetRequiredService<IBotFightsAPI>();
-// var user = await botFightsAPI.GetUser(config.UserId);
-// logger.LogInformation("User: {@User}", user);
-
-var service = app.Services.GetRequiredService<IWordleFightService>();
-var bot = app.Services.GetRequiredService<IWordleBot>();
-
-var fight = await service.CreateFight("test");
-logger.LogInformation("Created Fight: {FightId}", fight.Id);
-await Task.Delay(1000);
-
-while (fight.Games.Any(x => !x.Solved))
-{
-    var guesses = new List<Guess>();
-    foreach (var unSolvedGame in fight.Games.Where(x => !x.Solved))
+app.AddCommand("botfights",
+    async ([FromService] IWordleBot bot,
+        [FromService] IWordleFightService service,
+        [FromService] ILogger<Program> logger) =>
     {
-        var guessStr = await bot.GetNextGuess(unSolvedGame.Tries);
-        if (guessStr == null)
+        var fight = await service.CreateFight("test");
+        logger.LogInformation("Created Fight: {FightId}", fight.Id);
+        await Task.Delay(1000);
+
+        while (fight.Games.Any(x => !x.Solved))
         {
-            continue;
+            var guesses = new List<Guess>();
+            foreach (var unSolvedGame in fight.Games.Where(x => !x.Solved))
+            {
+                var guessStr = await bot.GetNextGuess(unSolvedGame.Tries);
+                if (guessStr == null)
+                {
+                    continue;
+                }
+
+                guesses.Add(new Guess
+                {
+                    GameNumber = unSolvedGame.Number,
+                    GuessString = guessStr?.ToLower()
+                });
+            }
+
+            fight = await service.TryGuesses(fight, guesses);
+            await Task.Delay(1000);
         }
 
-        guesses.Add(new Guess
+        foreach (var x in fight.Games)
         {
-            GameNumber = unSolvedGame.Number,
-            GuessString = guessStr?.ToLower()
-        });
-    }
+            logger.LogInformation("Game Result: {@Fight}", new
+            {
+                Number = x.Number,
+                Solution = x.Tries.LastOrDefault()?.TryString,
+                NumberOfTries = x.Tries.Count
+            });
+        }
 
-    fight = await service.TryGuesses(fight, guesses);
-    await Task.Delay(1000);
-}
-
-foreach (var x in fight.Games)
-{
-    logger.LogInformation("Game Result: {@Fight}", new
-    {
-        Number = x.Number,
-        Solution = x.Tries.LastOrDefault()?.TryString,
-        NumberOfTries = x.Tries.Count
+        return 0;
     });
-}
+
+app.AddCommand("user",
+    async ([Option('u')] string userId, [FromService] IBotFightsAPI botFightsAPI, [FromService] ILogger<Program> logger) =>
+    {
+        var user = await botFightsAPI.GetUser(userId);
+        logger.LogInformation("User: {@User}", user);
+
+        return 0;
+    });
+
+app.Run();

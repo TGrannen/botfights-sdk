@@ -17,15 +17,12 @@ namespace BotFights.Core;
 
 public static class Extensions
 {
-    public static WebApplicationBuilder AddBotFights(this WebApplicationBuilder builder, Type type)
+    public static IServiceCollection AddBotFights(this IServiceCollection builder, IConfiguration configuration)
     {
-        builder.Configuration.AddUserSecrets(type.Assembly);
-        builder.Services.Configure<BotFightsConfiguration>(builder.Configuration.GetSection("BotFights"));
-        builder.Services.AddTransient<IBotFightsConfiguration>(provider => provider.GetService<IOptions<BotFightsConfiguration>>()?.Value);
-        builder.Services.AddBotFightsClient<IBotFightsAPI>();
-        builder.Host.UseSerilog((context, configuration) => { configuration.ReadFrom.Configuration(context.Configuration); });
-
-        var registry = builder.Services.AddPolicyRegistry();
+        builder.Configure<BotFightsConfiguration>(configuration.GetSection("BotFights"));
+        builder.AddTransient<IBotFightsConfiguration>(provider => provider.GetService<IOptions<BotFightsConfiguration>>()?.Value);
+        builder.AddBotFightsClient<IBotFightsAPI>();
+        var registry = builder.AddPolicyRegistry();
 
         registry.Add("retry", GetRetryPolicy());
         registry.Add("circuit", GetCircuitBreakerPolicy());
