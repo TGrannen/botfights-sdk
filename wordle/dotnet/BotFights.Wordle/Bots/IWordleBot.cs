@@ -4,5 +4,5 @@ namespace BotFights.Wordle.Bots;
 
 public interface IWordleBot
 {
-    Task<string> GetNextGuess(List<Try> tries);
+    Task<string> GetNextGuess(List<Try> tries, List<string> words);
 }

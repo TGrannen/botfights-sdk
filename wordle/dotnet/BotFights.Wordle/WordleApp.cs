@@ -1,6 +1,7 @@
 ﻿using BotFights.Core;
 using BotFights.Core.API;
 using BotFights.Wordle.API;
+using BotFights.Wordle.API.Models;
 using BotFights.Wordle.Bots;
 using BotFights.Wordle.Models;
 using BotFights.Wordle.Services;
@@ -63,6 +64,7 @@ public class WordleApp
                 [FromService] IWordListProvider wordListProvider,
                 [FromService] ILogger<Program> logger) =>
             {
+                var words = await wordListProvider.GetWordList("wordlist.txt");
                 var fight = await service.CreateFight("test");
                 logger.LogInformation("Created Fight: {FightId}", fight.Id);
                 await Task.Delay(1000);
@@ -72,7 +74,7 @@ public class WordleApp
                     var guesses = new List<Guess>();
                     foreach (var unSolvedGame in fight.Games.Where(x => !x.Solved))
                     {
-                        var guessStr = await bot.GetNextGuess(unSolvedGame.Tries);
+                        var guessStr = await bot.GetNextGuess(unSolvedGame.Tries, words);
                         if (guessStr == null)
                         {
                             continue;
@@ -96,7 +98,7 @@ public class WordleApp
                     {
                         Number = x.Number,
                         Solution = x.Tries.LastOrDefault()?.TryString,
-                        NumberOfTries = x.Tries.Count
+                        NumberOfTries = x.Tries.Count,
                     });
                 }
 
@@ -121,7 +123,8 @@ public class WordleApp
                         Number = game.Number,
                         Solved = game.Solved,
                         Solution = game.Tries.LastOrDefault()?.TryString,
-                        NumberOfTries = game.Tries.Count
+                        NumberOfTries = game.Tries.Count,
+                        Guesses = game.Tries.Select(x => x.TryString)
                     };
                     if (game.Solved)
                     {

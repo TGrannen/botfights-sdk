@@ -52,7 +52,7 @@ class WordleBotPlayerService : IWordleBotPlayerService
         var game = new Game { Tries = new List<Try>() };
         while (true)
         {
-            var guess = await bot.GetNextGuess(game.Tries);
+            var guess = await bot.GetNextGuess(game.Tries, words);
 
             if (string.IsNullOrEmpty(guess))
             {
