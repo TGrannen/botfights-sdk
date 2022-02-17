@@ -58,7 +58,7 @@ class WordleBotPlayerService : IWordleBotPlayerService
             {
                 return game;
             }
-            
+
             var @try = GetTryResult(guess, secret);
             game.Tries.Add(@try);
 
@@ -82,14 +82,14 @@ class WordleBotPlayerService : IWordleBotPlayerService
         var index = 0;
         foreach (var c in guess)
         {
-            PositionResult r = secret.Contains(c)
-                ? secret.IndexOf(c) == index ? PositionResult.Correct : PositionResult.Close
+            var positionResult = secret.Contains(c)
+                ? secret.IndexOf(c, index) == index ? PositionResult.Correct : PositionResult.Close
                 : PositionResult.Miss;
             result.Positions.Add(new Position
             {
                 Index = index,
                 Char = c,
-                Result = r
+                Result = positionResult
             });
             index++;
         }

@@ -108,7 +108,7 @@ public class WordleApp
 
     private static void AddBotTestCommand(CoconaApp app)
     {
-        app.AddCommand("test", async (int count, [FromService] IWordleBotPlayerService service,
+        app.AddCommand("test", async (int count, bool showGuesses, [FromService] IWordleBotPlayerService service,
             [FromService] IWordListProvider wordListProvider,
             [FromService] ILogger<Program> logger) =>
         {
@@ -124,7 +124,7 @@ public class WordleApp
                         Solved = game.Solved,
                         Solution = game.Tries.LastOrDefault()?.TryString,
                         NumberOfTries = game.Tries.Count,
-                        Guesses = game.Tries.Select(x => x.TryString)
+                        Guesses = showGuesses ? game.Tries.Select(x => x.TryString) : new[] { "Omitted" }
                     };
                     if (game.Solved)
                     {
