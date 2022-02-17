@@ -85,6 +85,7 @@ public class WordleApp
 
                     fight = await service.TryGuesses(fight, guesses);
                     await Task.Delay(1000);
+                    logger.LogInformation("Games remaining: {Games}", fight.Games.Count(x => !x.Solved));
                 }
 
                 foreach (var x in fight.Games)

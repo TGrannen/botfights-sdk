@@ -25,6 +25,33 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Remove="Wordlist\secrets.txt" />
+    <Content Include="Wordlist\secrets.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Wordlist\wordlist.txt" />
+    <Content Include="Wordlist\wordlist.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Wordlist\wordlist-big.txt" />
+    <Content Include="Wordlist\wordlist-big.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Wordlist\wordlist6.txt" />
+    <Content Include="Wordlist\wordlist6.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Wordlist" />
+  </ItemGroup>
+
+  <Target Name="Copy my stuff" BeforeTargets="Build">
+    <ItemGroup>
+      <MySourceFiles Include="..\..\python\*.txt" />
+    </ItemGroup>
+    <Copy SourceFiles="@(MySourceFiles)" DestinationFolder="$(BaseOutputPath)\..\Wordlist" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>
