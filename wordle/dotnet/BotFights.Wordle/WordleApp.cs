@@ -139,7 +139,10 @@ public class WordleApp
         });
     }
 
-    private static void LogBotResults(bool hideGameResults, KeyValuePair<string, List<Game>> valuePair, bool showGuesses, ILogger<Program> logger)
+    private static void LogBotResults(bool hideGameResults,
+        KeyValuePair<string, List<Game>> valuePair,
+        bool showGuesses,
+        ILogger<Program> logger)
     {
         if (hideGameResults)
         {
@@ -174,6 +177,7 @@ public class WordleApp
     {
         logger.LogInformation("Game Stats: {@Stats}", new
         {
+            Bot = valuePair.Key,
             Tries = new
             {
                 Min = valuePair.Value.Min(x => x.Tries.Count),
