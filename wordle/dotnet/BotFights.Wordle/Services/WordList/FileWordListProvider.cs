@@ -4,17 +4,17 @@ namespace BotFights.Wordle.Services.WordList;
 
 public class FileWordListProvider : IWordListProvider
 {
-    private const string Path = @".\Wordlist\wordlist.txt";
-    private List<string> _lines = null;
+    private const string BasePath = @".\Wordlist\";
+    private readonly Dictionary<string, List<string>> _linesDictionary = new();
 
-    public Task<List<string>> GetWordList()
+    public Task<List<string>> GetWordList(string file)
     {
-        if (_lines != null)
+        if (_linesDictionary.ContainsKey(file))
         {
-            return Task.FromResult(_lines);
+            return Task.FromResult(_linesDictionary[file]);
         }
 
-        using var fs = new FileStream(Path, FileMode.Open, FileAccess.Read);
+        using var fs = new FileStream(Path.Combine(BasePath, file), FileMode.Open, FileAccess.Read);
         using var sr = new StreamReader(fs, Encoding.UTF8);
 
         string line;
@@ -25,7 +25,7 @@ public class FileWordListProvider : IWordListProvider
             lines.Add(line.ToLowerInvariant());
         }
 
-        _lines = lines.ToList();
-        return Task.FromResult(_lines);
+        _linesDictionary.Add(file, lines);
+        return Task.FromResult(lines);
     }
 }

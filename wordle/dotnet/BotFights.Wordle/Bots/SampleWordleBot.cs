@@ -16,7 +16,7 @@ class SampleWordleBot : IWordleBot
     {
         var allPositions = tries.Where(x => x.Positions != null).SelectMany(x => x.Positions).ToList();
         var correctPositions = GetCorrectChars(allPositions);
-        var allWords = await _listProvider.GetWordList();
+        var allWords = await _listProvider.GetWordList("wordlist.txt");
         var words = GetRemainingWords(allWords, correctPositions);
 
         var triedWords = tries.ToDictionary(x => x.TryString);

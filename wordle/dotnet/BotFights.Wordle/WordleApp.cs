@@ -32,6 +32,7 @@ public class WordleApp
         builder.Services.AddBotFightsClient<IWordleBotFightsAPI>();
         builder.Services.AddTransient<IWordleFightService, WordleFightService>();
         builder.Services.AddSingleton<IWordListProvider, FileWordListProvider>();
+        builder.Services.AddSingleton<IWordleBotPlayerService, WordleBotPlayerService>();
         builder.Host.UseSerilog((context, configuration) => { configuration.ReadFrom.Configuration(context.Configuration); });
 
         configureServices?.Invoke(builder.Services);
@@ -105,15 +106,35 @@ public class WordleApp
 
     private static void AddBotTestCommand(CoconaApp app)
     {
-        app.AddCommand("test",
-            ([FromService] IEnumerable<IWordleBot> bots,
-                [FromService] IWordleFightService service,
-                [FromService] IWordListProvider wordListProvider,
-                [FromService] ILogger<Program> logger) =>
-            {
-                logger.LogInformation("Bots: {@Bots}", bots);
+        app.AddCommand("test", async (int count, [FromService] IWordleBotPlayerService service,
+            [FromService] IWordListProvider wordListProvider,
+            [FromService] ILogger<Program> logger) =>
+        {
+            var results = await service.RunBots(count);
 
-                return 0;
-            });
+            foreach (var valuePair in results)
+            {
+                foreach (var game in valuePair.Value)
+                {
+                    var logGame = new
+                    {
+                        Number = game.Number,
+                        Solved = game.Solved,
+                        Solution = game.Tries.LastOrDefault()?.TryString,
+                        NumberOfTries = game.Tries.Count
+                    };
+                    if (game.Solved)
+                    {
+                        logger.LogInformation("Bot: {Bot} Game Result: {@Game}", valuePair.Key, logGame);
+                    }
+                    else
+                    {
+                        logger.LogWarning("Bot: {Bot} Game Result: {@Game}", valuePair.Key, logGame);
+                    }
+                }
+            }
+
+            return 0;
+        });
     }
 }

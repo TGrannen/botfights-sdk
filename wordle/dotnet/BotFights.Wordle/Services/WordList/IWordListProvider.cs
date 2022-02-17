@@ -2,5 +2,5 @@
 
 public interface IWordListProvider
 {
-    public Task<List<string>> GetWordList();
+    public Task<List<string>> GetWordList(string file);
 }
