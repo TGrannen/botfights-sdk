@@ -1,7 +1,6 @@
 ﻿using BotFights.Core;
 using BotFights.Core.API;
 using BotFights.Wordle.API;
-using BotFights.Wordle.API.Models;
 using BotFights.Wordle.Bots;
 using BotFights.Wordle.Models;
 using BotFights.Wordle.Services;
@@ -59,11 +58,28 @@ public class WordleApp
     private static void AddBotFightsCommand(CoconaApp app)
     {
         app.AddCommand("botfights",
-            async ([FromService] IWordleBot bot,
+            async ([FromService] IEnumerable<IWordleBot> bots,
                 [FromService] IWordleFightService service,
                 [FromService] IWordListProvider wordListProvider,
                 [FromService] ILogger<Program> logger) =>
             {
+                var botList = bots.ToList();
+                if (!botList.Any())
+                {
+                    logger.LogError("No bots found. Create a class that Inherits the IWordleBot interface to run a bot");
+                    return 1;
+                }
+
+                if (botList.Count > 1)
+                {
+                    logger.LogError(
+                        "More than one bot found. Either delete or comment out a bot to remove it from this list. Bots: {@Bots}",
+                        botList.Select(x => x.GetType().Name));
+                    return 1;
+                }
+
+                var bot = botList.First();
+
                 var words = await wordListProvider.GetWordList("wordlist.txt");
                 var fight = await service.CreateFight("test");
                 logger.LogInformation("Created Fight: {FightId}", fight.Id);
