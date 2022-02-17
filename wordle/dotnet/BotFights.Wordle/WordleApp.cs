@@ -124,46 +124,62 @@ public class WordleApp
 
     private static void AddBotTestCommand(CoconaApp app)
     {
-        app.AddCommand("test", async (int count, bool showGuesses, [FromService] IWordleBotPlayerService service,
+        app.AddCommand("test", async (int count, bool showGuesses, bool hideGameResults, [FromService] IWordleBotPlayerService service,
             [FromService] IWordListProvider wordListProvider,
             [FromService] ILogger<Program> logger) =>
         {
             var results = await service.RunBots(count);
 
-            foreach (var valuePair in results)
+            foreach (var botGamesPair in results)
             {
-                foreach (var game in valuePair.Value)
-                {
-                    var logGame = new
-                    {
-                        Number = game.Number,
-                        Solved = game.Solved,
-                        Solution = game.Tries.LastOrDefault()?.TryString,
-                        NumberOfTries = game.Tries.Count,
-                        Guesses = showGuesses ? game.Tries.Select(x => x.TryString) : new[] { "Omitted" }
-                    };
-                    if (game.Solved)
-                    {
-                        logger.LogInformation("Bot: {Bot} Game Result: {@Game}", valuePair.Key, logGame);
-                    }
-                    else
-                    {
-                        logger.LogWarning("Bot: {Bot} Game Result: {@Game}", valuePair.Key, logGame);
-                    }
-                }
-
-                logger.LogInformation("Game Stats: {@Stats}", new
-                {
-                    Tries = new
-                    {
-                        Min = valuePair.Value.Min(x => x.Tries.Count),
-                        Average = valuePair.Value.Average(x => x.Tries.Count),
-                        Mix = valuePair.Value.Max(x => x.Tries.Count),
-                    }
-                });
+                LogBotResults(hideGameResults, botGamesPair, showGuesses, logger);
             }
 
             return 0;
+        });
+    }
+
+    private static void LogBotResults(bool hideGameResults, KeyValuePair<string, List<Game>> valuePair, bool showGuesses, ILogger<Program> logger)
+    {
+        if (hideGameResults)
+        {
+            LogGameStats(valuePair, logger);
+            return;
+        }
+
+        foreach (var game in valuePair.Value)
+        {
+            var logGame = new
+            {
+                Number = game.Number,
+                Solved = game.Solved,
+                Solution = game.Tries.LastOrDefault()?.TryString,
+                NumberOfTries = game.Tries.Count,
+                Guesses = showGuesses ? game.Tries.Select(x => x.TryString) : new[] { "Omitted" }
+            };
+            if (game.Solved)
+            {
+                logger.LogInformation("Bot: {Bot} Game Result: {@Game}", valuePair.Key, logGame);
+            }
+            else
+            {
+                logger.LogWarning("Bot: {Bot} Game Result: {@Game}", valuePair.Key, logGame);
+            }
+        }
+
+        LogGameStats(valuePair, logger);
+    }
+
+    private static void LogGameStats(KeyValuePair<string, List<Game>> valuePair, ILogger<Program> logger)
+    {
+        logger.LogInformation("Game Stats: {@Stats}", new
+        {
+            Tries = new
+            {
+                Min = valuePair.Value.Min(x => x.Tries.Count),
+                Average = valuePair.Value.Average(x => x.Tries.Count),
+                Mix = valuePair.Value.Max(x => x.Tries.Count),
+            }
         });
     }
 }
