@@ -7,7 +7,7 @@
     },
     "BotFights.Wordle-test": {
       "commandName": "Project",
-      "commandLineArgs": "test --count 15"
+      "commandLineArgs": "test --count 5 --show-guesses"
     },
     "BotFights.Wordle-fight": {
       "commandName": "Project",
